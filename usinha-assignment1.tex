@@ -1,0 +1,63 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage[]{listings}
+\usepackage{color}
+\usepackage{courier}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\title{16-824: Assignment 01\\\small{Using Caffe}}
+\author{Utkarsh Sinha}
+
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+
+\lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
+\lstset{framextopmargin=50pt,frame=bottomline}
+
+\begin{document}
+\lstset{language=Matlab,%
+    %basicstyle=\color{red},
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
+
+
+  \maketitle
+  \tableofcontents
+
+    \setcounter{section}{3}
+    \newpage
+    \section{Object classification on COCO}
+    \newpage
+
+    \section{Object classification on COCO from scratch}
+    %\lstinputlisting{q1.m}
+    \newpage
+
+    \section{Object localization on COCO}
+    %\begin{figure}[h]
+    %    \centering
+    %    \includegraphics[width=\linewidth]{file.png}
+    %    \caption{This is the caption}
+    %\end{figure}
+    \newpage
+
+    \section{Joint learning for classification and localization}
+    \newpage
+
+    \section{Nearest neighbours visualization}
+
+\end{document}
+
