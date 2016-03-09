@@ -3,3 +3,5 @@
 *.log
 *.tar
 *.tar.gz
+*.caffemodel
+*.solverstate
