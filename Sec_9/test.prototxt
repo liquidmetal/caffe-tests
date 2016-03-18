@@ -4,33 +4,6 @@ layer {
     type: "ImageData"
     top: "data"
     top: "label_both"
-    include {
-        phase: TRAIN
-    }
-    transform_param {
-        mirror: false
-        crop_size: 227
-        mean_value: 104
-    }
-    image_data_param {
-        source: "/work/school/16-824/assignment01/list/trainlist_both2.txt"
-        batch_size: 50
-        new_height: 227
-        new_width: 227
-        root_folder: "/work/datasets/vlr/hw1/crop_imgs/"
-        shuffle: true
-        label_num: 5
-    }
-}
-
-layer {
-    name: "data"
-    type: "ImageData"
-    top: "data"
-    top: "label_both"
-    include {
-        phase: TEST
-    }
     transform_param {
         mirror: false
         crop_size: 227
@@ -46,7 +19,6 @@ layer {
         label_num: 5
     }
 }
-
 
 layer {
     name: "label_slice"
@@ -419,40 +391,28 @@ layer {
 }
 
 layer {
-    name: "dropper"
-    type: "DropOutput"
-    bottom: "fc8_retrained_bbox_larger"
-    bottom: "label_class"
-    bottom: "label_bbox"
-    top: "bbox_predicted"
-    top: "bbox_gt"
-}
-
-layer {
-    name: "accuracy"
-    type: "Accuracy"
-    bottom: "fc8_retrained_class"
-    bottom: "label_class"
-    top: "accuracy"
-    include {
-        phase: TEST
-    }
-}
-
-layer {
     name: "loss_class"
-    type: "SoftmaxWithLoss"
+    type: "Softmax"
     bottom: "fc8_retrained_class"
-    bottom: "label_class"
     top: "loss_class"
-    loss_weight: 0.4
 }
 
-layer {
-    name: "loss_bbox"
-    type: "EuclideanLoss"
-    bottom: "bbox_predicted"
-    bottom: "bbox_gt"
-    top: "loss_bbox"
-    loss_weight: 0.6
-}
+
+#layer {
+#    name: "dropper"
+#    type: "DropOutput"
+#    bottom: "fc8_retrained_bbox_larger"
+#    bottom: "loss_class"
+#    bottom: "label_bbox"
+#    top: "bbox_predicted"
+#    top: "bbox_gt"
+#}
+
+
+#layer {
+#    name: "loss_bbox"
+#    type: "EuclideanLoss"
+#    bottom: "bbox_predicted"
+#    bottom: "bbox_gt"
+#    top: "loss_bbox"
+#}

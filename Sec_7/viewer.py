@@ -10,7 +10,7 @@ sys.path.insert(0, caffe_root+'python')
 import caffe
 
 def load_testdata():
-    test_listfile = '/work/school/16-824/assignment01/list/testlist_both.txt'
+    test_listfile = '/work/school/16-824/assignment01/list/testlist_bbox2.txt'
     test_list = np.loadtxt(test_listfile, str, comments=None, delimiter='\n')
     data_counts = len(test_list)
 

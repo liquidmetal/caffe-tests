@@ -15,8 +15,7 @@ test_listfile = '/work/school/16-824/assignment01/list/testlist_both.txt'
 caffe.set_device(0)
 caffe.set_mode_gpu()
 accuracy = {}
-#for number in xrange(10000, 100000, 10000):
-for number in [50000]:
+for number in xrange(10000, 50001, 10000):
     net = caffe.Net('test.prototxt',
                     'models/ec_iter_%d.caffemodel' % number,
                     caffe.TEST)
@@ -42,10 +41,10 @@ for number in [50000]:
             fname = test_list[id].split(' ')[0]
             lbl = int(test_list[id].split(' ')[1])
             
-            cls = out['fc8_retrained_class'][j] 
-            prop = out['fc8_retrained_bbox'][j] 
-
+            cls = out['loss_class'][j] 
             pred_lbl = int(cls.argmax())
+            prop = net.blobs['fc8_retrained_bbox_larger'].data[j].reshape( (30, 4) )[pred_lbl]
+
             if pred_lbl == lbl:
                 acc = acc + 1
 

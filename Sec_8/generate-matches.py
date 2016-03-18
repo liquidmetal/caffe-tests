@@ -9,8 +9,8 @@ sys.path.insert(0, caffe_root + 'python')
 import caffe, os
 from sklearn.neighbors import NearestNeighbors
 
-def load_testdata():
-    test_listfile = '/work/school/16-824/assignment01/list/testlist_class.txt'
+def load_traindata():
+    test_listfile = '/work/school/16-824/assignment01/list/trainlist_class.txt'
     test_list = np.loadtxt(test_listfile, str, comments=None, delimiter='\n')
     data_counts = len(test_list)
 
@@ -60,7 +60,8 @@ def run_network(net, data_counts):
     batch_count = int(np.ceil(float(data_counts)/batch_size))
 
     for i in xrange(batch_count):
-        print('Batch %d/%d' % (i, batch_count))
+        if i % 100 == 0:
+            print('Batch %d/%d' % (i, batch_count))
         out = net.forward()
         
         pool5_current = np.reshape(net.blobs['pool5'].data, (50, 9216) )
@@ -79,70 +80,54 @@ def run_network(net, data_counts):
     return pool5, fc7
 
 def find_closest_match_index(inp, features):
-    import pdb; pdb.set_trace()
-    nbrs = NearestNeighbors(n_neighbors=10, algorithm='ball_tree').fit(features)
-    distances, indices = nbrs.kneighbors(np.array([inp]))
+    nbrs = NearestNeighbors(n_neighbors=10, algorithm='brute').fit(features.tolist())
+    distances, indices = nbrs.kneighbors([inp.tolist()])
     return indices
 
 def main():
     initialize_caffe()
-    test_list, data_counts, counts = load_testdata()
+    test_list, data_counts, counts = load_traindata()
 
-    file_pool5_c = './pool5_c.txt.npy'
-    file_fc7_c = './fc7_c.txt.npy'
-    if not os.path.exists(file_pool5_c) or not os.path.exists(file_fc7_c):
-        print('Generating classification features')
-        pool5_c, fc7_c = run_classification_network(data_counts)
-        np.save(file_pool5_c, pool5_c)
-        np.save(file_fc7_c, fc7_c)
-    else:
-        print('Loading classification features from disk')
-        import pdb; pdb.set_trace()
-        pool5_c = np.fromfile(file_pool5_c)
-        fc7_c = np.fromfile(file_fc7_c)
+    print('Generating input feature vectors')
+    inp_pool5_c, inp_fc7_c = fwd_cls()
+    inp_pool5_l, inp_fc7_l = fwd_loc()
 
-    file_pool5_l = './pool5_l.txt.npy'
-    file_fc7_l = './fc7_l.txt.npy'
-    if not os.path.exists(file_pool5_l) or not os.path.exists(file_fc7_l):
-        print('Generating localization features')
-        pool5_l, fc7_l = run_localization_network(data_counts)
-        np.save(file_pool5_l, pool5_l)
-        np.save(file_fc7_l, fc7_l)
-    else:
-        print('Loading localization features from disk')
-        pool5_l = np.fromfile(file_pool5_l)
-        fc7_l = np.fromfile(file_fc7_l)
+    print('Generating classification features')
+    pool5_c, fc7_c = run_classification_network(data_counts)
 
-    file_inp_pool5_c = './inp_pool5_c.npy'
-    file_inp_fc7_c = './inp_fc7_c.npy'
-    file_inp_pool5_l = './inp_pool5_l.npy'
-    file_inp_fc7_l = './inp_fc7_l.npy'
-    if (not os.path.exists(file_inp_pool5_c) or
-        not os.path.exists(file_inp_fc7_c) or
-        not os.path.exists(file_inp_pool5_l) or
-        not os.path.exists(file_inp_fc7_l)):
-        print('Generating input feature vectors')
-        inp_pool5_c, inp_fc7_c = fwd_cls()
-        inp_pool5_l, inp_fc7_l = fwd_loc()
 
-        np.save(file_inp_pool5_c, inp_pool5_c)
-        np.save(file_inp_fc7_c, inp_fc7_c)
-        np.save(file_inp_pool5_l, inp_pool5_l)
-        np.save(file_inp_fc7_l, inp_fc7_l)
-    else:
-        print('Loading input feature vectors from disk')
-        import pdb; pdb.set_trace()
-        original = np.fromfile(file_inp_pool5_c)
-        inp_pool5_c = original.reshape( (3, ) )
-        inp_fc7_c   = np.fromfile(file_inp_fc7_c)
-        inp_pool5_l = np.fromfile(file_inp_pool5_l)
-        inp_fc7_l   = np.fromfile(file_inp_fc7_l)
-
+    print('Classification network')
     for i in xrange(3):
-        idx = find_closest_match_index(inp_pool5_c, pool5_c)
-        idx = find_closest_match_index(inp_fc7_c[i], fc7_c)
-        idx = find_closest_match_index(inp_pool5_l[i], pool5_l)
-        idx = find_closest_match_index(inp_fc7_l[i], fc7_l)
+        print('Image %d ====================' % i)
+        idx1 = find_closest_match_index(inp_pool5_c[i], pool5_c)
+        idx2 = find_closest_match_index(inp_fc7_c[i], fc7_c)
+        print('  classification_pool5: ')
+        print('    %s' % idx1)
+        print('  classification_fc7: ')
+        print('    %s' % idx2)
+
+    del pool5_c
+    del fc7_c
+
+    ####################################################
+    print('Generating localization features')
+    pool5_l, fc7_l = run_localization_network(data_counts)
+
+    print('')
+    print('')
+    print('')
+    print('')
+    print('Localization network')
+    for i in xrange(3):
+        idx3 = find_closest_match_index(inp_pool5_l[i], pool5_l)
+        idx4 = find_closest_match_index(inp_fc7_l[i], fc7_l)
+        print('  localize_pool5: ')
+        print('    %s' % idx3)
+        print('  localize_fc7: ')
+        print('    %s' % idx4)
+
+    del pool5_l
+    del fc7_l
 
 if __name__ == "__main__":
     main()

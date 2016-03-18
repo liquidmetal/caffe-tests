@@ -1,66 +1,47 @@
-name: "mycoco"
+name: "FlickrStyleCaffeNet"
 layer {
-    name: "data"
-    type: "ImageData"
-    top: "data"
-    top: "label_both"
-    include {
-        phase: TRAIN
-    }
-    transform_param {
-        mirror: false
-        crop_size: 227
-        mean_value: 104
-    }
-    image_data_param {
-        source: "/work/school/16-824/assignment01/list/trainlist_both2.txt"
-        batch_size: 50
-        new_height: 227
-        new_width: 227
-        root_folder: "/work/datasets/vlr/hw1/crop_imgs/"
-        shuffle: true
-        label_num: 5
-    }
+  name: "data"
+  type: "ImageData"
+  top: "data"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    mirror: false
+    crop_size: 227
+    mean_file: "imagenet_mean.binaryproto"
+  }
+  image_data_param {
+    source: "testlist_class.txt"
+    batch_size: 50
+    new_height: 256
+    new_width: 256
+    root_folder: "/work/datasets/vlr/hw1/crop_imgs/"
+    shuffle: false
+  }
 }
-
-layer {
-    name: "data"
-    type: "ImageData"
-    top: "data"
-    top: "label_both"
-    include {
-        phase: TEST
-    }
-    transform_param {
-        mirror: false
-        crop_size: 227
-        mean_value: 104
-    }
-    image_data_param {
-        source: "/work/school/16-824/assignment01/list/testlist_both.txt"
-        batch_size: 50
-        new_height: 227
-        new_width: 227
-        root_folder: "/work/datasets/vlr/hw1/crop_imgs/"
-        shuffle: false
-        label_num: 5
-    }
-}
-
-
-layer {
-    name: "label_slice"
-    type: "Slice"
-    bottom: "label_both"
-    top: "label_class"
-    top: "label_bbox"
-    slice_param {
-        axis: 1
-        slice_point: 1
-    }
-}
-
-
+#layer {
+#  name: "data"
+#  type: "ImageData"
+#  top: "data"
+#  top: "label"
+#  include {
+#    phase: TEST
+#  }
+#  transform_param {
+#    mirror: false
+#    crop_size: 227
+#    mean_file: "imagenet_mean.binaryproto"
+#  }
+#  image_data_param {
+#    source: "/work/school/16-824/assignment01/list/testlist_class.txt"
+#    batch_size: 50
+#    new_height: 256
+#    new_width: 256
+#    root_folder: "/work/datasets/vlr/hw1/crop_imgs/"
+#  }
+#/
 layer {
   name: "conv1"
   type: "Convolution"
@@ -366,10 +347,10 @@ layer {
   }
 }
 layer {
-  name: "fc8_retrained_class"
+  name: "fc8_retrained"
   type: "InnerProduct"
   bottom: "fc7"
-  top: "fc8_retrained_class"
+  top: "fc8_retrained"
   # lr_mult is set to higher than for other layers, because this layer is starting from random while the others are already trained
   param {
     lr_mult: 10
@@ -392,67 +373,20 @@ layer {
   }
 }
 layer {
-  name: "fc8_retrained_bbox_larger"
-  type: "InnerProduct"
-  bottom: "fc7"
-  top: "fc8_retrained_bbox_larger"
-  # lr_mult is set to higher than for other layers, because this layer is starting from random while the others are already trained
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 120
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "fc8_retrained"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
   }
 }
-
 layer {
-    name: "dropper"
-    type: "DropOutput"
-    bottom: "fc8_retrained_bbox_larger"
-    bottom: "label_class"
-    bottom: "label_bbox"
-    top: "bbox_predicted"
-    top: "bbox_gt"
+  name: "softmax"
+  type: "Softmax"
+  bottom: "fc8_retrained"
+  #bottom: "label"
+  top: "softmax"
 }
 
-layer {
-    name: "accuracy"
-    type: "Accuracy"
-    bottom: "fc8_retrained_class"
-    bottom: "label_class"
-    top: "accuracy"
-    include {
-        phase: TEST
-    }
-}
-
-layer {
-    name: "loss_class"
-    type: "SoftmaxWithLoss"
-    bottom: "fc8_retrained_class"
-    bottom: "label_class"
-    top: "loss_class"
-    loss_weight: 0.4
-}
-
-layer {
-    name: "loss_bbox"
-    type: "EuclideanLoss"
-    bottom: "bbox_predicted"
-    bottom: "bbox_gt"
-    top: "loss_bbox"
-    loss_weight: 0.6
-}
